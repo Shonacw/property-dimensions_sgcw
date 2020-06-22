@@ -1,1 +1,5 @@
-# property-dimensions
+# Usage
+
+```
+python osm.py lat lng
+```
