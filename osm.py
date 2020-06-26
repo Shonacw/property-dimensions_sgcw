@@ -20,7 +20,7 @@ osgb36 = pyproj.CRS("EPSG:27700")
 project = pyproj.Transformer.from_crs(wgs84, osgb36, always_xy=True).transform
 
 api = overpass.API()
-response = api.get("""way["building"](around:10, %s, %s)""" % (lat, lng), verbosity="geom")
+response = api.get("""way["building"](around:5, %s, %s)""" % (lat, lng), verbosity="geom")
 
 if len(response.features) < 1:
     print("no building found")
@@ -69,7 +69,7 @@ else:
 
 stats = zonal_stats(projected_poly, raster)
 
-print("property depth", depth)
 print("property width", width)
+print("property depth", depth)
 print("property height", stats[0].get("max"))
 print("property area", projected_poly.area)
