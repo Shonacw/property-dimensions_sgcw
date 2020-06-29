@@ -106,7 +106,7 @@ class Dimensions:
     def calculate(self, road, lat, lng):
         poly = self.method.getBuildingPolygon(lat, lng)
         if poly is None:
-            print("no osm building found")
+            print("no building found")
         else:
             area = poly.area
 
@@ -137,7 +137,7 @@ class Dimensions:
 
             height = DSM.getHeight(poly)
 
-            print("osm:")
+            print(type(self.method).__name__)
             print("property width", width)
             print("property depth", depth)
             print("property height", height)
