@@ -77,17 +77,24 @@ class Google:
         ret, thresh = cv2.threshold(imgray, 127, 255, 0)
         contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-        for idx, contour in enumerate(contours):
-            d = cv2.pointPolygonTest(contour, (self.imageSize / 2, self.imageSize / 2), True)
-            if d > 0:
-                points = cv2.approxPolyDP(contour, 0.1 * cv2.arcLength(contour, True), True)
-                coordinates = []
-                for point in points:
-                    coordinates.append(self.getPointLatLng(lat, lng, point[0][0], point[0][1]))
-                coordinates.append(coordinates[0])
-                return GIS.reproject(Polygon(coordinates))
+        min_distance = sys.maxsize
+        contour_idx = -1
 
-        return None
+        for idx, contour in enumerate(contours):
+            distance = cv2.pointPolygonTest(contour, (self.imageSize / 2, self.imageSize / 2), True)
+            if distance > 0 and distance < min_distance:
+                min_distance = distance
+                contour_idx = idx
+
+        if contour_idx > -1:
+            points = cv2.approxPolyDP(contours[contour_idx], 0.1 * cv2.arcLength(contour, True), True)
+            coordinates = []
+            for point in points:
+                coordinates.append(self.getPointLatLng(lat, lng, point[0][0], point[0][1]))
+            coordinates.append(coordinates[0])
+            return GIS.reproject(Polygon(coordinates))
+        else:
+            return None
 
 
 class DSM:
