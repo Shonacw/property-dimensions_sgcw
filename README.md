@@ -1,5 +1,5 @@
 # Usage
 
 ```
-python osm.py lat lng
+python dimensions.py lat lng
 ```
