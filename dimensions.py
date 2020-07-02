@@ -4,7 +4,9 @@ from requests.utils import quote
 import overpass
 from shapely.geometry import Polygon, Point
 from shapely.ops import transform
+import shapely.wkt
 from rasterstats import zonal_stats
+from osgeo import ogr
 import pyproj
 import cv2
 import requests
@@ -106,11 +108,11 @@ class DSM:
         return stats[0].get("max")
 
 
-class Dimensions:
+class Property:
     def __init__(self, method):
         self.method = method
 
-    def calculate(self, road, lat, lng):
+    def calculate_dimensions(self, road, lat, lng):
         poly = self.method.getBuildingPolygon(lat, lng)
         if poly is None:
             print("no building found")
@@ -151,6 +153,66 @@ class Dimensions:
             print("property area", area)
 
 
+class Plot:
+    file = r"data/Barnet.gml"
+
+    def getPlot(self, lat, lng):
+        source = ogr.Open(self.file)
+        layer = source.GetLayer()
+        point = GIS.reproject(Point(lng, lat))
+
+        while True:
+            feat = layer.GetNextFeature()
+            if feat is None:
+                break
+            geom = feat.GetGeometryRef()
+            wkt = geom.ExportToWkt()
+            poly = shapely.wkt.loads(wkt)
+            within = point.within(poly)
+            if within:
+                return poly
+
+        return None
+
+    def calculate_dimensions(self, road, lat, lng):
+
+        plot = self.getPlot(lat, lng)
+
+        if plot is not None:
+
+            box = GIS.getBoundingBox(plot)
+            x, y = box.exterior.coords.xy
+
+            if road is not None:
+
+                distances = (road.distance(Point(x[0], y[0])), road.distance(Point(x[1], y[1])),
+                             road.distance(Point(x[2], y[2])), road.distance(Point(x[3], y[3])))
+
+                index = distances.index(min(distances))
+
+                if index == 0 or index == 2:
+                    width = Point(x[0], y[0]).distance(Point(x[1], y[1]))
+                    depth = Point(x[1], y[1]).distance(Point(x[2], y[2]))
+                else:
+                    width = Point(x[1], y[1]).distance(Point(x[2], y[2]))
+                    depth = Point(x[0], y[0]).distance(Point(x[1], y[1]))
+            else:
+
+                print("error: couldn't snap to nearest road")
+
+                edge_length = (
+                    Point(x[0], y[0]).distance(Point(x[1], y[1])), Point(x[1], y[1]).distance(Point(x[2], y[2])))
+                width = min(edge_length)
+                depth = max(edge_length)
+
+            print("plot width", width)
+            print("plot depth", depth)
+            print("plot area", plot.area)
+
+        else:
+            print("plot not found")
+
+
 if len(sys.argv) != 3:
     print("usage: dimensions.py lat lng")
     exit(1)
@@ -164,11 +226,18 @@ try:
 
     road = OSM.getNearestRoad(lat, lng)
 
-    d = Dimensions(OSM())
-    d.calculate(road, lat, lng)
+    p = Property(OSM())
+    p.calculate_dimensions(road, lat, lng)
 
-    d = Dimensions(Google())
-    d.calculate(road, lat, lng)
+    print("")
+
+    p = Property(Google())
+    p.calculate_dimensions(road, lat, lng)
+
+    print("")
+
+    p = Plot()
+    p.calculate_dimensions(road, lat, lng)
 
 except ValueError:
     print("params should be numbers")
