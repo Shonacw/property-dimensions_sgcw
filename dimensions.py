@@ -145,12 +145,8 @@ class Property:
                 depth = max(edge_length)
 
             height = DSM.getHeight(poly)
-
-            print(type(self.method).__name__)
-            print("property width", width)
-            print("property depth", depth)
-            print("property height", height)
-            print("property area", area)
+            # print(type(self.method).__name__)
+            return width, depth, height, area
 
 
 class Plot:
@@ -205,9 +201,7 @@ class Plot:
                 width = min(edge_length)
                 depth = max(edge_length)
 
-            print("plot width", width)
-            print("plot depth", depth)
-            print("plot area", plot.area)
+            return width, depth, plot.area
 
         else:
             print("plot not found")
@@ -226,18 +220,33 @@ try:
 
     road = OSM.getNearestRoad(lat, lng)
 
-    p = Property(OSM())
-    p.calculate_dimensions(road, lat, lng)
-
-    print("")
-
-    p = Property(Google())
-    p.calculate_dimensions(road, lat, lng)
-
-    print("")
-
     p = Plot()
-    p.calculate_dimensions(road, lat, lng)
+    width, depth, plot_area = p.calculate_dimensions(road, lat, lng)
+
+    print("plot width", width)
+    print("plot depth", depth)
+    print("plot area", plot_area)
+
+    p = Property(OSM())
+    width, depth, height, property_area = p.calculate_dimensions(road, lat, lng)
+
+    print("OSM")
+    print("property width", width)
+    print("property depth", depth)
+    print("property height", height)
+    print("property area", property_area)
+    print("land area", plot_area - property_area)
+    
+    p = Property(Google())
+    width, depth, height, property_area = p.calculate_dimensions(road, lat, lng)
+
+    print("Google")
+    print("property width", width)
+    print("property depth", depth)
+    print("property height", height)
+    print("property area", property_area)
+    print("land area", plot_area - property_area)
+
 
 except ValueError:
     print("params should be numbers")
