@@ -1,9 +1,10 @@
 import sys
+import sys
 import requests
 from requests.utils import quote
 import overpass
-from shapely.geometry import Polygon, Point
-from shapely.ops import transform
+from shapely.geometry import Polygon, Point, LineString
+from shapely.ops import transform, linemerge, unary_union, polygonize
 import shapely.wkt
 from rasterstats import zonal_stats
 from osgeo import ogr
@@ -12,6 +13,7 @@ import cv2
 import requests
 import numpy
 import math
+import cmath
 
 
 class GIS:
@@ -19,9 +21,15 @@ class GIS:
     osgb36 = pyproj.CRS("EPSG:27700")
     project = pyproj.Transformer.from_crs(wgs84, osgb36, always_xy=True).transform
 
+    # project_back = pyproj.Transformer.from_crs(osgb36, wgs84, always_xy=True).transform
+
     @staticmethod
     def reproject(geom):
         return transform(GIS.project, geom)
+
+    # @staticmethod
+    # def reproject_back(geom):
+    # return transform(GIS.project_back, geom)
 
     @staticmethod
     def getBoundingBox(geom):
@@ -112,12 +120,66 @@ class Property:
     def __init__(self, method):
         self.method = method
 
-    def calculate_dimensions(self, road, lat, lng):
+    def calculateDimensions(self, road, lat, lng):
         poly = self.method.getBuildingPolygon(lat, lng)
         if poly is None:
             print("no building found")
+            return None, None, None, None
         else:
-            area = poly.area
+            box = GIS.getBoundingBox(poly)
+            x, y = box.exterior.coords.xy
+
+            if road is not None:
+
+                distances = (road.distance(Point(x[0], y[0])), road.distance(Point(x[1], y[1])),
+                             road.distance(Point(x[2], y[2])), road.distance(Point(x[3], y[3])))
+
+                index = distances.index(min(distances))
+
+                if index == 0 or index == 2:
+                    width = Point(x[0], y[0]).distance(Point(x[1], y[1]))
+                    depth = Point(x[1], y[1]).distance(Point(x[2], y[2]))
+                else:
+                    width = Point(x[1], y[1]).distance(Point(x[2], y[2]))
+                    depth = Point(x[0], y[0]).distance(Point(x[1], y[1]))
+            else:
+
+                edge_length = (
+                    Point(x[0], y[0]).distance(Point(x[1], y[1])), Point(x[1], y[1]).distance(Point(x[2], y[2])))
+                width = min(edge_length)
+                depth = max(edge_length)
+
+            height = DSM.getHeight(poly)
+            # print(type(self.method).__name__)
+            return poly, width, depth, height
+
+
+class Plot:
+    file = r"data/Barnet.gml"
+
+    def getPlotPolygon(self, lat, lng):
+        source = ogr.Open(self.file)
+        layer = source.GetLayer()
+        point = GIS.reproject(Point(lng, lat))
+
+        while True:
+            feat = layer.GetNextFeature()
+            if feat is None:
+                break
+            geom = feat.GetGeometryRef()
+            wkt = geom.ExportToWkt()
+            poly = shapely.wkt.loads(wkt)
+            within = point.within(poly)
+            if within:
+                return poly
+
+        return None
+
+    def calculateDimensions(self, road, lat, lng):
+
+        poly = self.getPlotPolygon(lat, lng)
+
+        if poly is not None:
 
             box = GIS.getBoundingBox(poly)
             x, y = box.exterior.coords.xy
@@ -137,52 +199,93 @@ class Property:
                     depth = Point(x[0], y[0]).distance(Point(x[1], y[1]))
             else:
 
-                print("error: couldn't snap to nearest road")
-
                 edge_length = (
                     Point(x[0], y[0]).distance(Point(x[1], y[1])), Point(x[1], y[1]).distance(Point(x[2], y[2])))
                 width = min(edge_length)
                 depth = max(edge_length)
 
-            height = DSM.getHeight(poly)
-            # print(type(self.method).__name__)
-            return width, depth, height, area
+            return poly, width, depth
+
+        else:
+            print("plot not found")
+            return None, None, None
 
 
-class Plot:
-    file = r"data/Barnet.gml"
+class RearGarden:
 
-    def getPlot(self, lat, lng):
-        source = ogr.Open(self.file)
-        layer = source.GetLayer()
-        point = GIS.reproject(Point(lng, lat))
+    def __init__(self, property, plot, road):
+        self.property = property
+        self.plot = plot
+        self.road = road
 
-        while True:
-            feat = layer.GetNextFeature()
-            if feat is None:
-                break
-            geom = feat.GetGeometryRef()
-            wkt = geom.ExportToWkt()
-            poly = shapely.wkt.loads(wkt)
-            within = point.within(poly)
-            if within:
-                return poly
+    @staticmethod
+    def pairs(lst):
+        for i in range(1, len(lst)):
+            yield lst[i - 1], lst[i]
 
-        return None
+    @staticmethod
+    def extendLine(coords, dist):
+        x1 = coords[0][0]
+        y1 = coords[0][1]
+        x2 = coords[1][0]
+        y2 = coords[1][1]
 
-    def calculate_dimensions(self, road, lat, lng):
+        difference = complex(x2, y2) - complex(x1, y1)
 
-        plot = self.getPlot(lat, lng)
+        (distance, angle) = cmath.polar(difference)
+        displacement = cmath.rect(dist, angle)
+        xy3 = displacement + complex(x2, y2)
+        x3 = xy3.real
+        y3 = xy3.imag
 
-        if plot is not None:
+        (distance, angle) = cmath.polar(-difference)
+        displacement = cmath.rect(dist, angle)
+        xy4 = displacement + complex(x1, y1)
+        x4 = xy4.real
+        y4 = xy4.imag
 
-            box = GIS.getBoundingBox(plot)
+        return LineString([(x3, y3), (x4, y4)])
+
+    def getFurthestWall(self):
+        max_distance = 0
+        for pair in self.pairs(list(self.property.exterior.coords)):
+            line = LineString([pair[0], pair[1]])
+            d = self.road.distance(line)
+            if d > max_distance:
+                max_distance = d
+                max_line = line
+
+        extended_line = self.extendLine(max_line.coords, 10)
+        return extended_line
+
+    def getRearGardenPolygon(self):
+        wall = self.getFurthestWall()
+
+        merged = linemerge([self.plot.boundary, wall])
+        borders = unary_union(merged)
+        polygons = polygonize(borders)
+
+        max_distance = 0
+        for p in polygons:
+            d = self.road.distance(p)
+            if d > max_distance:
+                max_distance = d
+                rear_garden = p
+
+        return rear_garden
+
+    def calculateDimensions(self):
+        poly = self.getRearGardenPolygon()
+
+        if poly is not None:
+
+            box = GIS.getBoundingBox(poly)
             x, y = box.exterior.coords.xy
 
-            if road is not None:
+            if self.road is not None:
 
-                distances = (road.distance(Point(x[0], y[0])), road.distance(Point(x[1], y[1])),
-                             road.distance(Point(x[2], y[2])), road.distance(Point(x[3], y[3])))
+                distances = (self.road.distance(Point(x[0], y[0])), self.road.distance(Point(x[1], y[1])),
+                             self.road.distance(Point(x[2], y[2])), self.road.distance(Point(x[3], y[3])))
 
                 index = distances.index(min(distances))
 
@@ -194,17 +297,16 @@ class Plot:
                     depth = Point(x[0], y[0]).distance(Point(x[1], y[1]))
             else:
 
-                print("error: couldn't snap to nearest road")
-
                 edge_length = (
                     Point(x[0], y[0]).distance(Point(x[1], y[1])), Point(x[1], y[1]).distance(Point(x[2], y[2])))
                 width = min(edge_length)
                 depth = max(edge_length)
 
-            return width, depth, plot.area
+            return poly, width, depth
 
         else:
-            print("plot not found")
+            print("rear garden not found")
+            return None, None, None
 
 
 if len(sys.argv) != 3:
@@ -219,34 +321,70 @@ try:
     lng = float(sys.argv[2])
 
     road = OSM.getNearestRoad(lat, lng)
+    if road is None:
+        print("error: couldn't snap to nearest road")
 
     p = Plot()
-    width, depth, plot_area = p.calculate_dimensions(road, lat, lng)
+    plot, width, depth = p.calculateDimensions(road, lat, lng)
 
-    print("plot width", width)
-    print("plot depth", depth)
-    print("plot area", plot_area)
+    if plot is not None:
 
-    p = Property(OSM())
-    width, depth, height, property_area = p.calculate_dimensions(road, lat, lng)
+        plot_area = plot.area
 
-    print("OSM")
-    print("property width", width)
-    print("property depth", depth)
-    print("property height", height)
-    print("property area", property_area)
-    print("land area", plot_area - property_area)
-    
-    p = Property(Google())
-    width, depth, height, property_area = p.calculate_dimensions(road, lat, lng)
+        print("plot width", width)
+        print("plot depth", depth)
+        print("plot area", plot_area)
+        print("")
+        
+        p = Property(OSM())
+        property, width, depth, height = p.calculateDimensions(road, lat, lng)
+        if property is not None:
+            property_area = property.area
 
-    print("Google")
-    print("property width", width)
-    print("property depth", depth)
-    print("property height", height)
-    print("property area", property_area)
-    print("land area", plot_area - property_area)
+            rear = RearGarden(property, plot, road)
+            rear_garden, rear_garden_width, rear_garden_depth = rear.calculateDimensions()
 
+            if rear_garden is not None:
+                rear_garden_area = rear_garden.area
+
+            print("OSM")
+            print("property width", width)
+            print("property depth", depth)
+            print("property height", height)
+
+            print("rear garden width", rear_garden_width)
+            print("rear garden depth", rear_garden_depth)
+
+            print("property area", property_area)
+            print("land area", plot_area - property_area)
+            print("rear garden area", rear_garden_area);
+
+            print("")
+
+        p = Property(Google())
+        property, width, depth, height = p.calculateDimensions(road, lat, lng)
+        if property is not None:
+            property_area = property.area
+
+            rear = RearGarden(property, plot, road)
+            rear_garden, rear_garden_width, rear_garden_depth = rear.calculateDimensions()
+
+            if rear_garden is not None:
+                rear_garden_area = rear_garden.area
+
+            print("Google")
+            print("property width", width)
+            print("property depth", depth)
+            print("property height", height)
+
+            print("rear garden width", rear_garden_width)
+            print("rear garden depth", rear_garden_depth)
+
+            print("property area", property_area)
+            print("land area", plot_area - property_area)
+            print("rear garden area", rear_garden_area);
+
+            # print(GIS.reproject_back(plot.difference(property)))
 
 except ValueError:
     print("params should be numbers")
