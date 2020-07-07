@@ -1,4 +1,5 @@
 import sys
+from sys import exit
 import requests
 from requests.utils import quote
 import overpass
@@ -12,6 +13,7 @@ import cv2
 import requests
 import numpy
 import math
+import pdb
 
 
 class GIS:
@@ -100,7 +102,7 @@ class Google:
 
 
 class DSM:
-    raster = r"data/DTM-DSM.tif"
+    raster = r"data/DTM-DSM-G.tif"
 
     @staticmethod
     def getHeight(box):
@@ -220,23 +222,23 @@ try:
 
     road = OSM.getNearestRoad(lat, lng)
 
-    p = Plot()
-    width, depth, plot_area = p.calculate_dimensions(road, lat, lng)
+    # p = Plot()
+    # width, depth, plot_area = p.calculate_dimensions(road, lat, lng)
+    #
+    # print("plot width", width)
+    # print("plot depth", depth)
+    # print("plot area", plot_area)
 
-    print("plot width", width)
-    print("plot depth", depth)
-    print("plot area", plot_area)
+    # p = Property(OSM())
+    # width, depth, height, property_area = p.calculate_dimensions(road, lat, lng)
+    #
+    # print("OSM")
+    # print("property width", width)
+    # print("property depth", depth)
+    # print("property height", height)
+    # print("property area", property_area)
+    # print("land area", plot_area - property_area)
 
-    p = Property(OSM())
-    width, depth, height, property_area = p.calculate_dimensions(road, lat, lng)
-
-    print("OSM")
-    print("property width", width)
-    print("property depth", depth)
-    print("property height", height)
-    print("property area", property_area)
-    print("land area", plot_area - property_area)
-    
     p = Property(Google())
     width, depth, height, property_area = p.calculate_dimensions(road, lat, lng)
 
