@@ -7,4 +7,4 @@ class Property(Geometry):
         super().__init__(lat, lng, road)
 
     def getHeight(self):
-        return DSM.getHeight(self.polygon)
+        return DSM.getHeight(self.polygon, self.lat, self.lng)

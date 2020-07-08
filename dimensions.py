@@ -13,12 +13,14 @@ try:
     loc = Location(lat, lng)
 
     plot = loc.getPlot()
-    plotWidth, plotDepth = plot.getDimensions()
-    plotArea = plot.getArea()
-    print("plot width", plotWidth)
-    print("plot depth", plotDepth)
-    print("plot area", plotArea)
-    print("")
+    plotPolygon = plot.getPolygon()
+    if plotPolygon is not None:
+        plotWidth, plotDepth = plot.getDimensions()
+        plotArea = plot.getArea()
+        print("plot width", plotWidth)
+        print("plot depth", plotDepth)
+        print("plot area", plotArea)
+        print("")
 
     prop = loc.getOSMProperty()
     propWidth, propDepth = prop.getDimensions()
@@ -27,17 +29,19 @@ try:
     print("OSM")
     print("property width", propWidth)
     print("property depth", propDepth)
-    print("property height", propHeight)
+    if propHeight is not None:
+        print("property height", propHeight)
     print("property area", propArea)
-    print("land area", plotArea - propArea)
 
-    garden = loc.getGarden(prop.getPolygon(), plot.getPolygon())
-    gardenWidth, gardenDepth = garden.getDimensions()
-    gardenArea = garden.getArea()
-    print("rear garden width", gardenWidth)
-    print("rear garden depth", gardenDepth)
-    print("rear garden area", gardenArea)
-    print("")
+    if plotPolygon is not None:
+        print("land area", plotArea - propArea)
+        garden = loc.getGarden(prop.getPolygon(), plot.getPolygon())
+        gardenWidth, gardenDepth = garden.getDimensions()
+        gardenArea = garden.getArea()
+        print("rear garden width", gardenWidth)
+        print("rear garden depth", gardenDepth)
+        print("rear garden area", gardenArea)
+        print("")
 
     prop = loc.getGoogleProperty()
     propWidth, propDepth = prop.getDimensions()
@@ -46,16 +50,18 @@ try:
     print("Google")
     print("property width", propWidth)
     print("property depth", propDepth)
-    print("property height", propHeight)
+    if propHeight is not None:
+        print("property height", propHeight)
     print("property area", propArea)
-    print("land area", plotArea - propArea)
 
-    garden = loc.getGarden(prop.getPolygon(), plot.getPolygon())
-    gardenWidth, gardenDepth = garden.getDimensions()
-    gardenArea = garden.getArea()
-    print("rear garden width", gardenWidth)
-    print("rear garden depth", gardenDepth)
-    print("rear garden area", gardenArea)
+    if plotPolygon is not None:
+        print("land area", plotArea - propArea)
+        garden = loc.getGarden(prop.getPolygon(), plot.getPolygon())
+        gardenWidth, gardenDepth = garden.getDimensions()
+        gardenArea = garden.getArea()
+        print("rear garden width", gardenWidth)
+        print("rear garden depth", gardenDepth)
+        print("rear garden area", gardenArea)
 
 except ValueError:
     print("params must be numbers")
