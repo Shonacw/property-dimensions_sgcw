@@ -20,7 +20,8 @@ class OSM:
             else:
                 road_location = road.get("waypoints")[0].get("location")
                 point = Point(road_location)
-                return GIS.reproject(point)
+                print("snapped to nearest road using osrm")
+                return GIS.reprojectToOSGB36(point)
         else:
             return None
 
@@ -35,4 +36,4 @@ class OSMProperty(Property):
         if len(response.features) < 1:
             return None
 
-        return GIS.reproject(Polygon(response.features[0].geometry.coordinates))
+        return GIS.reprojectToOSGB36(Polygon(response.features[0].geometry.coordinates))

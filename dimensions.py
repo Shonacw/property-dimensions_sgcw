@@ -7,9 +7,6 @@ if len(sys.argv) != 3:
     exit(1)
 
 try:
-    # lat = 51.581264
-    # lng = -0.230575
-
     lat = float(sys.argv[1])
     lng = float(sys.argv[2])
 
@@ -33,6 +30,7 @@ try:
     print("property height", propHeight)
     print("property area", propArea)
     print("land area", plotArea - propArea)
+
     garden = loc.getGarden(prop.getPolygon(), plot.getPolygon())
     gardenWidth, gardenDepth = garden.getDimensions()
     gardenArea = garden.getArea()
@@ -51,6 +49,7 @@ try:
     print("property height", propHeight)
     print("property area", propArea)
     print("land area", plotArea - propArea)
+
     garden = loc.getGarden(prop.getPolygon(), plot.getPolygon())
     gardenWidth, gardenDepth = garden.getDimensions()
     gardenArea = garden.getArea()
@@ -59,11 +58,9 @@ try:
     print("rear garden area", gardenArea)
 
 except ValueError:
-    print("params should be numbers")
+    print("params must be numbers")
     exit()
 
 except:
     print("something went wrong")
     exit()
-
-# print(GIS.reproject_back(plot.difference(property)))

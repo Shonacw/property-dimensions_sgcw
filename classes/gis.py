@@ -7,16 +7,16 @@ from shapely.ops import transform
 class GIS:
     wgs84 = pyproj.CRS("EPSG:4326")
     osgb36 = pyproj.CRS("EPSG:27700")
-    project = pyproj.Transformer.from_crs(wgs84, osgb36, always_xy=True).transform
-    project_back = pyproj.Transformer.from_crs(osgb36, wgs84, always_xy=True).transform
+    from_wgs84_osgb36 = pyproj.Transformer.from_crs(wgs84, osgb36, always_xy=True).transform
+    from_osgb36_wgs84 = pyproj.Transformer.from_crs(osgb36, wgs84, always_xy=True).transform
 
     @staticmethod
-    def reproject(geom):
-        return transform(GIS.project, geom)
+    def reprojectToOSGB36(geom):
+        return transform(GIS.from_wgs84_osgb36, geom)
 
     @staticmethod
-    def reproject_back(geom):
-        return transform(GIS.project_back, geom)
+    def reprojectToWGS84(geom):
+        return transform(GIS.from_osgb36_wgs84, geom)
 
     @staticmethod
     def getBoundingBox(geom):

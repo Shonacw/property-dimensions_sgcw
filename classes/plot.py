@@ -15,7 +15,7 @@ class Plot(Geometry):
     def findPolygon(self):
         source = ogr.Open(self.file)
         layer = source.GetLayer()
-        point = GIS.reproject(Point(self.lng, self.lat))
+        point = GIS.reprojectToOSGB36(Point(self.lng, self.lat))
 
         while True:
             feature = layer.GetNextFeature()
