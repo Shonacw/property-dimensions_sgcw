@@ -22,11 +22,11 @@ try:
         print("plot area", plotArea)
         print("")
 
+    print("OSM")
     prop = loc.getOSMProperty()
     propWidth, propDepth = prop.getDimensions()
     propArea = prop.getArea()
     propHeight = prop.getHeight()
-    print("OSM")
     print("property width", propWidth)
     print("property depth", propDepth)
     if propHeight is not None:
@@ -43,11 +43,11 @@ try:
         print("rear garden area", gardenArea)
         print("")
 
+    print("Google")
     prop = loc.getGoogleProperty()
     propWidth, propDepth = prop.getDimensions()
     propArea = prop.getArea()
     propHeight = prop.getHeight()
-    print("Google")
     print("property width", propWidth)
     print("property depth", propDepth)
     if propHeight is not None:
