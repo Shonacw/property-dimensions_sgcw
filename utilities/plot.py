@@ -5,8 +5,7 @@ from skimage import io
 from skimage import color
 import matplotlib.pyplot as plt
 
-lat = 51.581314
-lng = -0.23119
+(lat, lng) = (51.576374, -0.099855)
 
 url = "http://maps.googleapis.com/maps/api/staticmap?center=%s,%s&zoom=21&size=640x640&maptype=roadmap&style=visibility:off&style=feature:landscape.man_made|element:geometry.stroke|visibility:on|color:0xffffff|weight:1&key=AIzaSyD4XzpPLesutnm9k0ZVZ-OCugAVHmqe58c" % (
     lat, lng)
@@ -27,7 +26,7 @@ min_distance = sys.maxsize
 contour_ind = -1
 for idx, contour in enumerate(contours):
     distance = cv2.pointPolygonTest(contour, (imageSize / 2, imageSize / 2), True)
-    if distance > 0 and distance < min_distance:
+    if distance >= 0.0 and distance < min_distance:
         min_distance = distance
         contour_ind = idx
     # im = cv2.drawContours(im, [contours[idx]], -1, (0, 255, 0), 2)
