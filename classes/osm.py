@@ -1,3 +1,4 @@
+import sys
 import overpass
 import requests
 from shapely.geometry import Polygon, Point
@@ -35,5 +36,15 @@ class OSMProperty(Property):
                            verbosity="geom")
         if len(response.features) < 1:
             return None
-
-        return GIS.reprojectToOSGB36(Polygon(response.features[0].geometry.coordinates))
+        elif len(response.features) > 1:
+            point = GIS.reprojectToOSGB36(Point(self.lng, self.lat))
+            minDistance = sys.maxsize
+            for feature in response.features:
+                poly = GIS.reprojectToOSGB36(Polygon(feature.geometry.coordinates))
+                distance = poly.distance(point)
+                if distance < minDistance:
+                    minDistance = distance
+                    nearestFeature = poly
+            return nearestFeature
+        else:
+            return GIS.reprojectToOSGB36(Polygon(response.features[0].geometry.coordinates))

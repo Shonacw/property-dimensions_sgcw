@@ -55,13 +55,13 @@ class GoogleProperty(Property):
         ret, thresh = cv2.threshold(imgray, 127, 255, 0)
         contours, _ = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
-        min_distance = sys.maxsize
+        minDistance = sys.maxsize
         contour_idx = -1
 
         for idx, contour in enumerate(contours):
             distance = cv2.pointPolygonTest(contour, (self.imageSize / 2, self.imageSize / 2), True)
-            if distance >= 0.0 and distance < min_distance:
-                min_distance = distance
+            if distance >= 0.0 and distance < minDistance:
+                minDistance = distance
                 contour_idx = idx
 
         if contour_idx > -1:
