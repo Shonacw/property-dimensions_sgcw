@@ -12,7 +12,7 @@ from dimensions import run
 def Testing_Anatoly_Road(Road_Name, sector_df, print_info=False):
     """
     Params: the name of road as a string, i.e. "Lothair Road North", the LD dataframe of the relevant sector
-    Optional Params: set print_info to True to display data after data collection for the street
+    Optional Params: set print_info=True to display info collected
 
     Returns: A dictionary of collected info. See 'data_dict' below for dict items.
 
