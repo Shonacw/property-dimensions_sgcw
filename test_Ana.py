@@ -30,8 +30,12 @@ def Testing_Anatoly_Road(Road_Name, sector_df, print_info=False):
 
     for lat, lng in zip(lats, longs):
         print(lat, lng)
-        if np.isnan(lat):
+        
+        if np.isnan(lat):            
+            for _, my_list in data_dict.items():
+                my_list.append(None)
             continue
+            
         plot_data, osm_data, goog_data, stat = run(lat, lng)
 
         data_dict['status'].append(stat)
@@ -62,14 +66,12 @@ def Testing_Anatoly_Road(Road_Name, sector_df, print_info=False):
 
         
     if print_info == True:
-        print("")
-        print(data_dict['status'])
-        print("")
         for name, my_list in data_dict.items():
             print(name)
             print(my_list)
             if name == 'status':
                 continue
+                
             my_list = [i for i in my_list if i is not None]
             ## Note: ignoring 'None's that arise from Linestring errors, and the '0's which arise from measurement errors
             print(round(np.std(my_list)/np.mean(my_list), 4))
