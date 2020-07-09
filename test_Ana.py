@@ -9,7 +9,7 @@ from dimensions import run
 #51.576485 -0.099359 is giving linestring error and is only highlighting the wall between the two properties
 
 
-def Testing_Anatoly_Road(Road_Name, sector_df=None, print_info=False):
+def Testing_Anatoly_Road(Road_Name, sector_df, print_info=False):
     """
     Params: the name of road as a string, i.e. "Lothair Road North", the LD dataframe of the relevant sector
     Optional Params: set print_info to True to display data after data collection for the street
@@ -19,10 +19,8 @@ def Testing_Anatoly_Road(Road_Name, sector_df=None, print_info=False):
     Notes: Currently specifying the sector dataframe within this function, for the example. Will be removed. Also
             currently only looping through 5 houses on the street bc its slow af.
     """
-
-    sector_df = pd.read_hdf('/Users/ShonaCW/Desktop/project_data/N/data_N4_1.h5', key='sector_data') #eventually remove this
     idxs = [idx for idx, c in sector_df.iterrows() if Road_Name in c["address"]]
-    lats = sector_df.iloc[idxs]['t_lat'][16:20]                                                      #eventually remove this
+    lats = sector_df.iloc[idxs]['t_lat'][16:20]                                                  #eventually remove this
     longs = sector_df.iloc[idxs]['t_long'][16:20]
 
     data_dict = {'status': [], 'plot_width': [], 'plot_depth': [], 'plot_area': [], 'width_osm': [], 'depth_osm': [],
@@ -81,4 +79,6 @@ def Testing_Anatoly_Road(Road_Name, sector_df=None, print_info=False):
     else:
         return data_dict
 
-Testing_Anatoly_Road("Lothair Road North", print_info=True)
+
+sector_df = pd.read_hdf('/Users/ShonaCW/Desktop/project_data/N/data_N4_1.h5', key='sector_data')
+Testing_Anatoly_Road("Lothair Road North", sector_df, print_info=True)
