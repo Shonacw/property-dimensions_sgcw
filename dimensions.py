@@ -86,13 +86,20 @@ if __name__ == "__main__":
         exit()
 
 def run(lat, lng):
+    """
+    Params: lat long coordinates
+    Returns: three lists and a string
+
+    Notes: Currently using the -very- wrong method of sorting the width/ depth of a property as max/min. This will
+    be removed or updated, only using it atm so we can get some reasonable stats for the particular street being tested.
+    """
     status = 'Worked'
     loc = Location(lat, lng)
 
     plot = loc.getPlot()
     plotPolygon = plot.getPolygon()
     if plotPolygon is not None:
-        #plotWidth, plotDepth, _ = plot.getDimensions() ############################################
+        #plotWidth, plotDepth, _ = plot.getDimensions()
         *widthdepth, _ = plot.getDimensions()
         plotDepth = max(widthdepth)
         plotWidth = min(widthdepth)
@@ -101,7 +108,7 @@ def run(lat, lng):
 
     prop = loc.getOSMProperty()
     #propWidth, propDepth, _ = prop.getDimensions()
-    *widthdepth, _ = garden.getDimensions()
+    *widthdepth, _ = prop.getDimensions()
     propDepth = max(widthdepth)
     propWidth = min(widthdepth)
     propArea = prop.getArea()
@@ -110,7 +117,7 @@ def run(lat, lng):
     if plotPolygon is not None:
         land_area= plotArea - propArea
         garden = loc.getGarden(prop.getPolygon(), plot.getPolygon())
-        #gardenWidth, gardenDepth, _ = garden.getDimensions() ################(will need to change)#####
+        #gardenWidth, gardenDepth, _ = garden.getDimensions()
         *widthdepth, _ = garden.getDimensions()
         gardenDepth = max(widthdepth)
         gardenWidth = min(widthdepth)
@@ -118,10 +125,7 @@ def run(lat, lng):
         osm_data = [propWidth, propDepth, propHeight, propArea, land_area, gardenWidth, gardenDepth, gardenArea]
 
     prop = loc.getGoogleProperty()
-    #propWidth, propDepth, _ = prop.getDimensions(goog=True)
-    *widthdepth, _ = garden.getDimensions(goog=True)
-    propDepth = max(widthdepth)
-    propWidth = min(widthdepth)
+    propWidth, propDepth, _ = prop.getDimensions(goog=True)
     if _ is not None:
         status = 'Linestring'
 
@@ -131,7 +135,7 @@ def run(lat, lng):
     if plotPolygon is not None:
         land_area = plotArea - propArea
         garden = loc.getGarden(prop.getPolygon(), plot.getPolygon())
-        #gardenWidth, gardenDepth, _ = garden.getDimensions() #######################
+        #gardenWidth, gardenDepth, _ = garden.getDimensions()
         *widthdepth, _ = garden.getDimensions()
         gardenDepth = max(widthdepth)
         gardenWidth = min(widthdepth)
@@ -140,6 +144,3 @@ def run(lat, lng):
 
     return plot_data, osm_data, goog_data, status
 
-
-#51.576248 -0.100351           111 lothair
-#51.576374 -0.099855           125 Lothair
