@@ -16,7 +16,7 @@ def Testing_Anatoly_Road(Road_Name, sector_df, print_info=False):
 
     Returns: A dictionary of collected info. See 'data_dict' below for dict items.
 
-    Notes: Currently only looping through 5 houses on the street bc its slow af.
+    Notes: Currently only looping through 5 houses on the street bc it's slow af.
     """
     idxs = [idx for idx, c in sector_df.iterrows() if Road_Name in c["address"]]
     lats = sector_df.iloc[idxs]['t_lat'][:5]                                                  #eventually remove this
@@ -60,6 +60,7 @@ def Testing_Anatoly_Road(Road_Name, sector_df, print_info=False):
 
         time.sleep(3) ## Required to avoid Overpass 'MultipleRequests' error
 
+        
     if print_info == True:
         print("")
         print(data_dict['status'])
@@ -69,7 +70,6 @@ def Testing_Anatoly_Road(Road_Name, sector_df, print_info=False):
             print(my_list)
             if name == 'status':
                 continue
-
             my_list = [i for i in my_list if i is not None]
             ## Note: ignoring 'None's that arise from Linestring errors, and the '0's which arise from measurement errors
             print(round(np.std(my_list)/np.mean(my_list), 4))
@@ -79,5 +79,6 @@ def Testing_Anatoly_Road(Road_Name, sector_df, print_info=False):
         return data_dict
 
 
+# Example
 sector_df = pd.read_hdf('/Users/ShonaCW/Desktop/project_data/N/data_N4_1.h5', key='sector_data')
 Testing_Anatoly_Road("Lothair Road North", sector_df, print_info=True)
