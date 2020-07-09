@@ -16,12 +16,11 @@ def Testing_Anatoly_Road(Road_Name, sector_df, print_info=False):
 
     Returns: A dictionary of collected info. See 'data_dict' below for dict items.
 
-    Notes: Currently specifying the sector dataframe within this function, for the example. Will be removed. Also
-            currently only looping through 5 houses on the street bc its slow af.
+    Notes: Currently only looping through 5 houses on the street bc its slow af.
     """
     idxs = [idx for idx, c in sector_df.iterrows() if Road_Name in c["address"]]
-    lats = sector_df.iloc[idxs]['t_lat'][16:20]                                                  #eventually remove this
-    longs = sector_df.iloc[idxs]['t_long'][16:20]
+    lats = sector_df.iloc[idxs]['t_lat'][:5]                                                  #eventually remove this
+    longs = sector_df.iloc[idxs]['t_long'][:5]
 
     data_dict = {'status': [], 'plot_width': [], 'plot_depth': [], 'plot_area': [], 'width_osm': [], 'depth_osm': [],
                  'height_osm': [], 'area_osm': [], 'land_area_osm': [], 'rear_garden_width_osm': [],
