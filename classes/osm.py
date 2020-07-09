@@ -21,7 +21,7 @@ class OSM:
             else:
                 road_location = road.get("waypoints")[0].get("location")
                 point = Point(road_location)
-                print("snapped to nearest road using osrm")
+                #print("snapped to nearest road using osrm")
                 return GIS.reprojectToOSGB36(point)
         else:
             return None

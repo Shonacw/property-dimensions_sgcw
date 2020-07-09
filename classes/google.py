@@ -23,7 +23,7 @@ class Google:
             response = r.json()
             location = response.get("snappedPoints")[0].get("location")
             point = Point(location.get("longitude"), location.get("latitude"))
-            print("snapped to nearest road using google roads api")
+            #print("snapped to nearest road using google roads api")
             return GIS.reprojectToOSGB36(point)
         else:
             return None

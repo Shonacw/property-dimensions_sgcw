@@ -3,7 +3,6 @@ from shapely.geometry import Point
 
 from .gis import GIS
 
-
 class Geometry:
 
     def __init__(self, lat, lng, road):
@@ -22,34 +21,38 @@ class Geometry:
         # return None, None, None
         return self.polygon
 
-    def getDimensions(self):
+    def getDimensions(self, goog=False):
         if self.polygon is not None:
             box = GIS.getBoundingBox(self.polygon)
-            x, y = box.exterior.coords.xy
-
-            if self.road is not None:
-
-                distances = (self.road.distance(Point(x[0], y[0])), self.road.distance(Point(x[1], y[1])),
-                             self.road.distance(Point(x[2], y[2])), self.road.distance(Point(x[3], y[3])))
-
-                index = distances.index(min(distances))
-
-                if index == 0 or index == 2:
-                    width = Point(x[0], y[0]).distance(Point(x[1], y[1]))
-                    depth = Point(x[1], y[1]).distance(Point(x[2], y[2]))
-                else:
-                    width = Point(x[1], y[1]).distance(Point(x[2], y[2]))
-                    depth = Point(x[0], y[0]).distance(Point(x[1], y[1]))
+            if goog==True and box.geom_type == 'LineString': ######################################################################## scw
+                print("Linestring alert!")
+                return None, None, 1 # to differentiate
             else:
+                x, y = box.exterior.coords.xy
 
-                edge_length = (
-                    Point(x[0], y[0]).distance(Point(x[1], y[1])), Point(x[1], y[1]).distance(Point(x[2], y[2])))
-                width = min(edge_length)
-                depth = max(edge_length)
+                if self.road is not None:
 
-            return width, depth
+                    distances = (self.road.distance(Point(x[0], y[0])), self.road.distance(Point(x[1], y[1])),
+                                 self.road.distance(Point(x[2], y[2])), self.road.distance(Point(x[3], y[3])))
+
+                    index = distances.index(min(distances))
+
+                    if index == 0 or index == 2:
+                        width = Point(x[0], y[0]).distance(Point(x[1], y[1]))
+                        depth = Point(x[1], y[1]).distance(Point(x[2], y[2]))
+                    else:
+                        width = Point(x[1], y[1]).distance(Point(x[2], y[2]))
+                        depth = Point(x[0], y[0]).distance(Point(x[1], y[1]))
+                else:
+
+                    edge_length = (
+                        Point(x[0], y[0]).distance(Point(x[1], y[1])), Point(x[1], y[1]).distance(Point(x[2], y[2])))
+                    width = min(edge_length)
+                    depth = max(edge_length)
+
+                return width, depth, None
         else:
-            return None, None
+            return None, None, None
 
     def getArea(self):
         return self.polygon.area
