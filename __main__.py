@@ -113,17 +113,17 @@ if __name__ == "__main__":
         os.chdir(origin_dir)
 
         for key, group in ref_df.groupby(['street']):
-            # getting the actual data for the properties on the street
-            data_group = df.loc[df['main_reference'].isin(group['main_reference'])]
-            data_group.dropna(axis=0, subset=['t_lat', 't_long'], inplace=True)
-            # now only the ones with coords are available
-            
-            data_dict_ = {'status': [], 'plot_width': [], 'plot_depth': [], 'plot_area': [], 'width_osm': [], 'depth_osm': [],
+           #dict to fill with dimension data for street
+           data_dict = {'status': [], 'plot_width': [], 'plot_depth': [], 'plot_area': [], 'width_osm': [], 'depth_osm': [],
                  'height_osm': [], 'area_osm': [], 'land_area_osm': [], 'rear_garden_width_osm': [],
                  'rear_garden_depth_osm': [], 'rear_garden_area_osm': [], 'width_goog': [], 'depth_goog': [],
                  'height_goog': [], 'area_goog': [], 'land_area_goog': [], 'rear_garden_width_goog': [],
                  'rear_garden_depth_goog': [], 'rear_garden_area_goog': []}
-            
+          
+            # getting the actual data for the properties on the street
+            data_group = df.loc[df['main_reference'].isin(group['main_reference'])]
+            data_group.dropna(axis=0, subset=['t_lat', 't_long'], inplace=True)
+            # now only the ones with coords are available
             for property in data_group.itertuples():
                 lat = getattr(property, 't_lat')
                 long = getattr(property, 't_long')
@@ -160,7 +160,6 @@ if __name__ == "__main__":
                         raise Exception('Unable to unpack')
 
                 #### INSPIRE
-
                 admin_district = get_authority(postcode)
                 inspire_gml_path = find_inspire(admin_district)
                 if inspire_gml_path == 'unknown':
@@ -183,7 +182,6 @@ if __name__ == "__main__":
                 Plot.set_inspire(inspire_gml_path)
                 print(getattr(property, 'address'))
                 #get_dimensions(lat, long)
-                
                 plot_data, osm_data, goog_data, stat  = run(lat, long)
                 
                 data_dict['status'].append(stat)
@@ -211,6 +209,17 @@ if __name__ == "__main__":
                 data_dict['rear_garden_area_goog'].append(goog_data[7])
                 
                 #time.sleep(3) ## Required to avoid Overpass 'MultipleRequests' error
+                
+                #data is now saved in dict, but we print here to check it worked
+                for name, my_list in data_dict.items():
+                  print(name)
+                  print(my_list)
+                  if name == 'status':
+                      continue
+
+                  my_list = [i for i in my_list if i is not None]
+                  ## Note: ignoring 'None's that arise from Linestring errors, and the '0's which arise from measurement errors
+                  print(round(np.std(my_list)/np.mean(my_list), 4))
                 
 
 
