@@ -7,8 +7,12 @@ from .geometry import Geometry
 
 
 class Plot(Geometry):
-    #file = r"data/Barnet.gml"
-    file = "/Users/ShonaCW/Pycharmprojects/new/Land_Registry_Cadastral_Parcels.gml"
+    file = r"data/Barnet.gml"
+    #file = "/Users/ShonaCW/Pycharmprojects/new/Land_Registry_Cadastral_Parcels.gml"
+
+    @classmethod
+    def set_inspire(cls, fname):
+        cls.file = fname
 
     def __init__(self, lat, lng, road):
         super().__init__(lat, lng, road)
