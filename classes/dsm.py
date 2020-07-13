@@ -4,8 +4,12 @@ from .gis import GIS
 
 
 class DSM:
-    #raster = r"data/DTM-DSM.tif"
-    raster = r"/Users/ShonaCW/PycharmProjects/new/DTM-DSM.tif"
+    raster = r"data/DTM-DSM.tif"
+    #raster = r"/Users/ShonaCW/PycharmProjects/new/DTM-DSM.tif"
+
+    @classmethod
+    def set_raster(cls, raster_file):
+        cls.raster = raster_file
 
     @staticmethod
     def getHeight(box, lat, lng):
