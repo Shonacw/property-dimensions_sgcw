@@ -1,5 +1,5 @@
 # Usage
 
 ```
-python dimensions.py lat lng
+python __main__.py Outer
 ```
