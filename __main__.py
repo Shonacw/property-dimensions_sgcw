@@ -212,6 +212,7 @@ if __name__ == "__main__":
                 
                 #now want to save dict data to a file...
                 df = pd.DataFrame.from_dict(data_dict ,orient='index').transpose()
+                df.to_csv('file_name.csv')
                 
                 #data is now saved in dict, but we print here to check it worked
                 for name, my_list in data_dict.items():
