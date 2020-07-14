@@ -40,6 +40,8 @@ def run(lat, lng):
 
     plot = loc.getPlot()
     plotPolygon = plot.getPolygon()
+    if plotPolygon is None:
+      status = 'Plot failed'
     if plotPolygon is not None:
         #plotWidth, plotDepth, _ = plot.getDimensions()
         *widthdepth, _ = plot.getDimensions()
