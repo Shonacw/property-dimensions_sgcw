@@ -210,6 +210,8 @@ if __name__ == "__main__":
                 
                 #time.sleep(3) ## Required to avoid Overpass 'MultipleRequests' error
                 
+                #now want to save dict data to a file...
+                
                 #data is now saved in dict, but we print here to check it worked
                 for name, my_list in data_dict.items():
                   print(name)
